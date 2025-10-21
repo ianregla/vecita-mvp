@@ -1,89 +1,173 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reserva de Cita - Vecita</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Portal Paciente — Vecita (Agendamiento)</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="container">
-    <div id="formContainer">
-      <h1 class="title">Reserva tu cita médica</h1>
-      <p class="subtitle">Completa los datos para tu agendamiento</p>
-
-      <form id="reservaForm" novalidate>
+  <!-- Login Modal -->
+  <div id="loginModal" class="login-modal">
+    <div class="login-content">
+      <div class="login-header">
+        <h2>Portal Paciente</h2>
+        <p>Ingresa para acceder a tu agendamiento personalizado</p>
+      </div>
+      
+      <form id="loginForm" class="login-form">
         <div class="form-group">
-          <label for="nombre">Nombre completo</label>
-          <input type="text" id="nombre" name="nombre" placeholder="Ej: Juan Pérez" required />
-          <small class="error-message"></small>
+          <label for="patientRut" class="form-label">RUT del paciente</label>
+          <input 
+            type="text" 
+            id="patientRut" 
+            placeholder="12.345.678-9" 
+            class="form-input"
+            required
+          />
         </div>
-
+        
         <div class="form-group">
-          <label for="rut">RUT</label>
-          <input type="text" id="rut" name="rut" placeholder="Ej: 12.345.678-9" required />
-          <small class="error-message"></small>
+          <label for="patientPassword" class="form-label">Contraseña</label>
+          <input 
+            type="password" 
+            id="patientPassword" 
+            placeholder="Tu contraseña" 
+            class="form-input"
+            required
+          />
         </div>
-
-        <div class="form-group">
-          <label for="correo">Correo electrónico</label>
-          <input type="email" id="correo" name="correo" placeholder="Ej: usuario@correo.cl" required />
-          <small class="error-message"></small>
+        
+        <button type="submit" class="login-btn">Ingresar</button>
+        
+        <div class="login-footer">
+          <p>¿No tienes cuenta? <a href="#" class="register-link">Regístrate aquí</a></p>
         </div>
-
-        <div class="form-group">
-          <label for="tipoConsulta">Tipo de consulta</label>
-          <select id="tipoConsulta" required>
-            <option value="">Selecciona una opción</option>
-            <option value="general">Consulta médica general</option>
-            <option value="control">Control médico</option>
-            <option value="ges">GES</option>
-            <option value="odontologia">Odontología</option>
-          </select>
-          <small class="error-message"></small>
-        </div>
-
-        <div class="form-group">
-          <label for="centro">Centro de salud</label>
-          <select id="centro" required>
-            <option value="">Selecciona un CESFAM</option>
-            <option value="alessandri">CESFAM Dr. Hernán Alessandri</option>
-            <option value="leng">CESFAM Dr. Alfonso Leng</option>
-            <option value="aguilucho">CESFAM El Aguilucho</option>
-          </select>
-          <small class="error-message"></small>
-        </div>
-
-        <div class="form-group">
-          <label for="fecha">Fecha preferida</label>
-          <input type="date" id="fecha" name="fecha" required />
-          <small class="error-message"></small>
-        </div>
-
-        <div class="form-group">
-          <label for="horario">Horario preferido</label>
-          <select id="horario" required>
-            <option value="">Selecciona un horario</option>
-            <option value="mañana">Mañana</option>
-            <option value="tarde">Tarde</option>
-          </select>
-          <small class="error-message"></small>
-        </div>
-
-        <button type="submit" id="btnSubmit">Reservar cita</button>
       </form>
     </div>
+  </div>
 
-    <div id="mensajeExito" class="hidden">
-      <div class="checkmark">✔</div>
-      <p>Tu solicitud fue enviada con éxito. Te contactaremos pronto.</p>
+  <!-- Patient Status Banner -->
+  <div id="patientStatusBanner" class="patient-status-banner hidden">
+    <div class="status-content">
+      <div class="status-info">
+        <span class="patient-name" id="patientNameDisplay"></span>
+        <span class="patient-status" id="patientStatusDisplay"></span>
+      </div>
+      <button id="logoutBtn" class="logout-btn">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">Vecita</div>
+      <nav>
+        <button class="side-btn active">Agendamiento de horas</button>
+        <button class="side-btn" disabled>Exámenes</button>
+        <button class="side-btn" disabled>Recetas</button>
+        <button class="side-btn" disabled>Licencias</button>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="main-header">
+        <h1>Agendamiento de horas</h1>
+      </header>
+
+      <!-- FILTER under title -->
+      <div class="filter-row">
+        <label for="filtroTipo" class="filter-label">Tipo de consulta</label>
+        <select id="filtroTipo" class="filter-select">
+          <option value="">Todos</option>
+          <option value="general">Consulta médica general</option>
+          <option value="control">Control médico</option>
+          <option value="ges">GES</option>
+          <option value="odontologia">Odontología</option>
+        </select>
+      </div>
+
+      <!-- Agendamiento Express y Disponibilidad -->
+      <div class="booking-container">
+        <!-- Agendamiento Express (50%) -->
+        <div class="express-booking">
+          <h2>Agendamiento Express</h2>
+          <div class="availability-overview">
+            <div class="availability-summary">
+              <span class="summary-text">Próximos horarios disponibles</span>
+              <button id="refreshAvailability" class="refresh-btn">🔄 Actualizar</button>
+            </div>
+            <div id="quickSlots" class="quick-slots"></div>
+          </div>
+        </div>
+
+        <!-- Disponibilidad por tipo de consulta (50%) -->
+        <div class="consultation-availability">
+          <h2>Disponibilidad por tipo de consulta</h2>
+          <div class="consultation-overview">
+            <div class="consultation-summary">
+              <span class="summary-text">Horarios por especialidad</span>
+            </div>
+            <div id="consultationSlots" class="consultation-slots"></div>
+          </div>
+          <div class="view-header">
+            <h3>Disponibilidad por especialidad</h3>
+            <div class="view-controls">
+              <button id="toggleView" class="view-toggle">Vista unificada</button>
+            </div>
+          </div>
+          <div id="unifiedGrid" class="unified-grid"></div>
+        </div>
+      </div>
+
+      <section id="catalog" class="catalog">
+        <!-- Left: cards (rendered) -->
+        <div id="cardsWrap" class="cards-wrap"></div>
+
+        <!-- Right: horarios (hidden until date selected) -->
+        <aside id="panelHorarios" class="panel-horarios hidden">
+          <div class="panel-header">
+            <div id="panelMedicoName" class="panel-medico-name"></div>
+            <div id="panelMedicoTipo" class="panel-medico-tipo"></div>
+          </div>
+          <div class="panel-body">
+            <h4 id="panelFechaTitle">Fecha</h4>
+            <div id="horariosList" class="horarios-list"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <!-- Confirmación modal (centrado) -->
+  <div id="confirmModal" class="confirm-modal hidden">
+    <div class="confirm-content">
+      <button id="closeConfirm" class="confirm-close">&times;</button>
+      <h3 id="confirmTitle">Confirmar reserva</h3>
+
+      <p id="confirmMessage" class="confirm-message"></p>
+
+      <div class="notify-options">
+        <label><input type="checkbox" id="notifyWhatsapp" checked /> Quiero que me notifiquen por whatsapp</label>
+        <label><input type="checkbox" id="notifyEmail" /> Quiero que me notifiquen por correo</label>
+      </div>
+
+      <div class="confirm-actions">
+        <button id="btnConfirm" class="confirm-btn" disabled>Confirmar reserva</button>
+      </div>
     </div>
   </div>
 
   <script src="script.js"></script>
 </body>
 </html>
+
+
+
+
+
 
 
 
